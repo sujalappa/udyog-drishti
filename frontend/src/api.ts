@@ -77,8 +77,9 @@ export const fileUrl = (jobId: string, file: string, download = false) => {
   return `/api/jobs/${jobId}/files/${encodeURIComponent(file)}${qs ? `?${qs}` : ''}`
 }
 
-export const periodCsvUrl = (jobId: string, start: string, end: string) => {
+/** Report or table for a chosen period, built on request from the stored monthly series. */
+export const periodFileUrl = (jobId: string, kind: 'pdf' | 'csv', start: string, end: string) => {
   const query = new URLSearchParams({ start, end })
   if (token) query.set('token', token)
-  return `/api/jobs/${jobId}/period.csv?${query}`
+  return `/api/jobs/${jobId}/period.${kind}?${query}`
 }

@@ -173,7 +173,7 @@ fill(sh["Text 28"], [
     "Maharashtra Pollution Control Board (MPCB)",
     "Mahagenco and NTPC environment teams",
     "CPCB; State Environment Department",
-    "MRSAC, Nagpur; IIIT Nagpur",
+    "MRSAC, Nagpur (state remote sensing centre)",
 ], size=9, bullets=True)
 
 # ---------------------------------------------------------------- slide 5: impact

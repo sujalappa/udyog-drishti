@@ -1,0 +1,275 @@
+{
+  "id": "c42988f42295",
+  "name": "Maharashtra plants and clusters",
+  "mode": "state",
+  "created_at": "2026-10-29T11:42:50+00:00",
+  "finished_at": "2026-10-29T11:49:02+00:00",
+  "status": "completed",
+  "options": {
+    "start_year": 2019
+  },
+  "aoi": null,
+  "stages": [
+    {
+      "id": "sites",
+      "name": "Plants and clusters",
+      "description": "Big coal plants and polluted industrial clusters",
+      "status": "done",
+      "started_at": "2026-10-29T11:42:50+00:00",
+      "finished_at": "2026-10-29T11:42:50+00:00",
+      "summary": "13 coal power sites (22,020 MW) and 4 industrial areas",
+      "metrics": {
+        "sites": 17
+      },
+      "preview": null
+    },
+    {
+      "id": "columns",
+      "name": "Monthly SO\u2082 and NO\u2082",
+      "description": "Sentinel-5P above local background, every month",
+      "status": "done",
+      "started_at": "2026-10-29T11:42:50+00:00",
+      "finished_at": "2026-10-29T11:43:39+00:00",
+      "summary": "93 months, 2019-01 to 2026-09",
+      "metrics": {},
+      "preview": null
+    },
+    {
+      "id": "flags",
+      "name": "Where to check",
+      "description": "Level, trend and scrubber ratio per site",
+      "status": "done",
+      "started_at": "2026-10-29T11:43:39+00:00",
+      "finished_at": "2026-10-29T11:43:39+00:00",
+      "summary": "5 to check first, 6 to watch",
+      "metrics": {
+        "check first": 5,
+        "watch": 6,
+        "low": 6,
+        "no data": 0
+      },
+      "preview": null
+    },
+    {
+      "id": "maps",
+      "name": "Maps",
+      "description": "SO\u2082 and NO\u2082 over Maharashtra, last 12 months",
+      "status": "done",
+      "started_at": "2026-10-29T11:43:39+00:00",
+      "finished_at": "2026-10-29T11:49:01+00:00",
+      "summary": "SO\u2082 and NO\u2082 maps ready",
+      "metrics": {},
+      "preview": null
+    },
+    {
+      "id": "outputs",
+      "name": "Report and exports",
+      "description": "PDF, CSV, GeoJSON and KML",
+      "status": "done",
+      "started_at": "2026-10-29T11:49:01+00:00",
+      "finished_at": "2026-10-29T11:49:02+00:00",
+      "summary": "PDF, CSV, GeoJSON and KML ready",
+      "metrics": {},
+      "preview": null
+    }
+  ],
+  "outputs": {
+    "layers": {
+      "units": {
+        "file": "sites.geojson",
+        "label": "Plants and clusters"
+      }
+    },
+    "rasters": {
+      "so2": {
+        "file": "so2.png",
+        "corners": [
+          [
+            72.4,
+            22.2
+          ],
+          [
+            81.0,
+            22.2
+          ],
+          [
+            81.0,
+            15.5
+          ],
+          [
+            72.4,
+            15.5
+          ]
+        ],
+        "label": "SO\u2082 column, 2025-10 to 2026-09 (Sentinel-5P)",
+        "legend": {
+          "type": "continuous",
+          "min": 100,
+          "max": 600,
+          "unit": "\u00b5mol/m\u00b2",
+          "palette": [
+            "fff5eb",
+            "fdd0a2",
+            "fd8d3c",
+            "d94801",
+            "7f2704"
+          ]
+        }
+      },
+      "no2": {
+        "file": "no2.png",
+        "corners": [
+          [
+            72.4,
+            22.2
+          ],
+          [
+            81.0,
+            22.2
+          ],
+          [
+            81.0,
+            15.5
+          ],
+          [
+            72.4,
+            15.5
+          ]
+        ],
+        "label": "NO\u2082 column, 2025-10 to 2026-09 (Sentinel-5P)",
+        "legend": {
+          "type": "continuous",
+          "min": 30,
+          "max": 120,
+          "unit": "\u00b5mol/m\u00b2",
+          "palette": [
+            "f7fcfd",
+            "bfd3e6",
+            "8c96c6",
+            "88419d",
+            "4d004b"
+          ]
+        }
+      }
+    },
+    "exports": {
+      "pdf": {
+        "file": "stack_report.pdf",
+        "label": "PDF report"
+      },
+      "csv": {
+        "file": "sites.csv",
+        "label": "Site table (CSV)"
+      },
+      "geojson": {
+        "file": "sites_results.geojson",
+        "label": "Map data (GeoJSON)"
+      },
+      "kml": {
+        "file": "sites.kml",
+        "label": "Google Earth (KML)"
+      }
+    }
+  },
+  "summary": {
+    "kind": "state",
+    "sites": 17,
+    "plants": 13,
+    "capacity_mw": 22020,
+    "counts": {
+      "check first": 5,
+      "watch": 6,
+      "low": 6,
+      "no data": 0
+    },
+    "first_month": "2019-01",
+    "latest_month": "2026-09",
+    "scrubbed": [
+      "mauda",
+      "dahanu",
+      "trombay"
+    ],
+    "method": {
+      "sites": "Coal plants of 500 MW or more from the Global Power Plant Database, plus three CPCB critically polluted clusters and Chandrapur's cement belt. Plants closer than ~10 km are one site: the satellite cannot separate them.",
+      "enhancement": "Monthly mean column within 10 km of the site minus the median in a 40\u201380 km ring (regional background). TROPOMI offline L3, cloud fraction under 0.3. Units: \u00b5mol/m\u00b2.",
+      "years": "Years are compared on January\u2013May only: clear skies and no monsoon washout.",
+      "status": "Check first: SO\u2082 above background of 150+ \u00b5mol/m\u00b2 over the last 12 months, or rising 25%+ against 2021-2024 (January\u2013May). Watch: 40+ \u00b5mol/m\u00b2. Low: below that, within the noise of a monthly mean.",
+      "scrubber": "SO\u2082 \u00f7 NO\u2082 above background, before vs after a date, minus the same change at exempt plants without scrubbers. A scrubber cuts SO\u2082 but not NO\u2082.",
+      "limits": "Columns, not stack concentrations: no verdict on the mg/Nm\u00b3 norm. One overpass a day (~13:30), so night releases are missed. Sites a few km apart are merged. Retrieval changes and coal sulphur content also move the numbers, so a change is a reason to inspect, not proof."
+    }
+  },
+  "provenance": [
+    {
+      "key": "so2",
+      "dataset": "Sentinel-5P TROPOMI offline L3 SO\u2082 column",
+      "provider": "ESA / Copernicus",
+      "source": "COPERNICUS/S5P/OFFL/L3_SO2",
+      "resolution_m": 1113,
+      "license": "Copernicus open licence",
+      "used_for": "SO\u2082 above local background, per site and month"
+    },
+    {
+      "key": "no2",
+      "dataset": "Sentinel-5P TROPOMI offline L3 tropospheric NO\u2082 column",
+      "provider": "ESA / Copernicus",
+      "source": "COPERNICUS/S5P/OFFL/L3_NO2",
+      "resolution_m": 1113,
+      "license": "Copernicus open licence",
+      "used_for": "NO\u2082 above local background: how hard the plant runs; denominator of the scrubber ratio"
+    },
+    {
+      "key": "gppd",
+      "dataset": "Global Power Plant Database v1.3",
+      "provider": "World Resources Institute",
+      "source": "WRI/GPPD/power_plants",
+      "license": "CC BY 4.0",
+      "used_for": "Plant locations and capacity (2018 snapshot)"
+    },
+    {
+      "key": "chen",
+      "dataset": "Chen et al. (2026), super-resolution SO\u2082 emissions over India from TROPOMI",
+      "provider": "Atmospheric Measurement Techniques 19, 2737",
+      "source": "amt.copernicus.org/articles/19/2737/2026",
+      "license": "CC BY 4.0",
+      "used_for": "Evidence that plant-level SO\u2082 is visible from TROPOMI (95% of plants above 1,000 MW detected)"
+    },
+    {
+      "key": "fgd",
+      "dataset": "MoEFCC notification on SO\u2082 norms for thermal plants, 11 Jul 2025",
+      "provider": "Ministry of Environment, Forest and Climate Change",
+      "source": "healthpolicy-watch.news; thenewsdirt.com (plant categories)",
+      "license": "Public",
+      "used_for": "Which plants are exempt from FGD (Category C) or reviewed case by case (Category B)"
+    },
+    {
+      "key": "mahagenco",
+      "dataset": "Mahagenco annual reports 2023-24 and 2024-25; CSTPS EC compliance report Jan\u2013Jun 2026",
+      "provider": "Maharashtra State Power Generation Co.",
+      "source": "mahagenco.in",
+      "license": "Public",
+      "used_for": "Planned FGD dates for Koradi, Paras, Chandrapur, Bhusawal, Parli"
+    },
+    {
+      "key": "fgdsites",
+      "dataset": "Plant scrubber status: The Live Nagpur (23 Oct 2026) and Mitsubishi Power on NTPC Mauda; Power Engineering on Dahanu seawater FGD; MPCB consent (2012) for Tata Power Trombay",
+      "provider": "News and company sources",
+      "source": "thelivenagpur.com; power.mhi.com; power-eng.com; mpcb.gov.in",
+      "license": "Public",
+      "used_for": "Reference plants with scrubbers (Mauda, Dahanu, Trombay)"
+    },
+    {
+      "key": "cepi",
+      "dataset": "CPCB Comprehensive Environmental Pollution Index action plans (2020)",
+      "provider": "Central Pollution Control Board",
+      "source": "cpcb.gov.in/industrial_pollution",
+      "license": "Public",
+      "used_for": "Critically polluted industrial clusters (Tarapur, Navi Mumbai, Chandrapur)"
+    }
+  ],
+  "event_counts": {
+    "info": 0,
+    "warning": 0,
+    "error": 0
+  },
+  "current_stage": "outputs"
+}

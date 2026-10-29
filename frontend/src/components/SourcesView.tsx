@@ -30,13 +30,13 @@ export function SourcesView({ job }: { job: Job }) {
   )
 }
 
-export function DownloadsView({ job }: { job: Job }) {
+export function DownloadsView({ job, only, note }: { job: Job; only?: string[]; note?: string }) {
   return (
     <div className="panel-body export-grid">
-      {Object.entries(job.outputs.exports).map(([k, e]) => (
+      {Object.entries(job.outputs.exports).filter(([k]) => !only || only.includes(k)).map(([k, e]) => (
         <a key={k} className="export-card" href={fileUrl(job.id, e.file, true)} download>
           <strong>{e.label}</strong>
-          <span className="muted small">{e.file}</span>
+          <span className="muted small">{note ?? e.file}</span>
         </a>
       ))}
     </div>

@@ -43,6 +43,28 @@ def counts_of(results: dict[str, dict]) -> dict[str, int]:
     return {s: sum(r["status"] == s for r in results.values()) for s in ("check first", "watch", "low", "no data")}
 
 
+def write_report(path, results: dict[str, dict], summary: dict, provenance: list[dict]) -> None:
+    """PDF for the period the results were summarised over (each result carries its period)."""
+    period = next(iter(results.values()))["period"]
+    counts = counts_of(results)
+    plants = sum(r["kind"] == "Coal power" for r in results.values())
+    report.build(
+        path, f"Industrial SO₂ and NO₂ watch: Maharashtra, {period['start']} to {period['end']}",
+        f"Udyog-drishti AI · Sentinel-5P · period {period['start']} to {period['end']} ({period['months']} months) · "
+        f"record {summary.get('first_month')} to {summary.get('latest_month')}",
+        [("Period", f"{period['start']} to {period['end']}, {period['months']} months"),
+         ("Sites", f"{plants} coal power sites ({summary.get('capacity_mw', 0):,} MW) and {len(results) - plants} "
+                   "industrial areas"),
+         ("Check first / watch", f"{counts['check first']} / {counts['watch']}"),
+         ("Reference plants with scrubbers", ", ".join(results[k]["name"] for k in summary.get("scrubbed", [])
+                                                       if k in results))],
+        air.METHOD, provenance, COLUMNS[:11], flat_rows(results),
+        "Levels are means over the period; the trend compares the latest January-May inside the period with "
+        "2021-2024. Satellite columns show where and when a plant's plume changed. They do not measure stack "
+        "concentration; use them to choose which plants to inspect and to check whether scrubbers changed what "
+        "reaches the air.")
+
+
 def run_state_job(job: Job) -> None:
     try:
         opts = job.state["options"]
@@ -112,16 +134,7 @@ def run_state_job(job: Job) -> None:
         write_geojson(job.path("sites_results.geojson"), fc, flat_by_id)
         write_kml(job.path("sites.kml"), fc, flat_by_id, "name", COLUMNS[1:13],
                   lambda r: STATUS_KML.get(r["status"], "ff999999"))
-        report.build(
-            job.path("stack_report.pdf"), "Industrial SO₂ and NO₂ watch: Maharashtra",
-            f"Udyog-drishti AI · Sentinel-5P · {months[0][0]}-{months[0][1]:02d} to {latest}",
-            [("Sites", f"{plants} coal power sites ({mw:,} MW) and {len(results) - plants} industrial areas"),
-             ("Check first / watch", f"{counts['check first']} / {counts['watch']}"),
-             ("Reference plants with scrubbers", ", ".join(results[k]["name"] for k in job.state["summary"]["scrubbed"])),
-             ("Months analysed", f"{len(months)}")],
-            air.METHOD, job.state["provenance"], COLUMNS[:11], flat,
-            "Satellite columns show where and when a plant's plume changed. They do not measure stack concentration; "
-            "use them to choose which plants to inspect and to check whether scrubbers changed what reaches the air.")
+        write_report(job.path("stack_report.pdf"), results, job.state["summary"], job.state["provenance"])
         for fmt, f, label in (("pdf", "stack_report.pdf", "PDF report"), ("csv", "sites.csv", "Site table (CSV)"),
                               ("geojson", "sites_results.geojson", "Map data (GeoJSON)"),
                               ("kml", "sites.kml", "Google Earth (KML)")):

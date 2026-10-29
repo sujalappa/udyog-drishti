@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import tempfile
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -15,7 +18,7 @@ from . import air, auth
 from .config import REPO_ROOT, settings
 from .jobs import Job, is_valid_job_id, list_jobs
 from .exports import csv_text
-from .pipelines import COLUMNS, STAGES, counts_of, flat_rows, run_state_job
+from .pipelines import COLUMNS, STAGES, counts_of, flat_rows, run_state_job, write_report
 
 FILENAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$")
 MONTH_RE = re.compile(r"^20\d\d-(0[1-9]|1[0-2])$")
@@ -23,6 +26,18 @@ MONTH_RE = re.compile(r"^20\d\d-(0[1-9]|1[0-2])$")
 app = FastAPI(title="Udyog-drishti AI", version="0.1.0", dependencies=[Depends(auth.require_user)])
 auth.register(app)
 executor = ThreadPoolExecutor(max_workers=2)
+
+
+SEED_DIR = REPO_ROOT / "seed" / "jobs"
+
+
+@app.on_event("startup")
+def seed_demo_jobs() -> None:
+    """Hosted copies start with an empty disk: copy the bundled demo results in, once."""
+    if SEED_DIR.is_dir():
+        for src in SEED_DIR.iterdir():
+            if src.is_dir() and not (settings.jobs_dir / src.name).exists():
+                shutil.copytree(src, settings.jobs_dir / src.name)
 
 
 @app.on_event("startup")
@@ -114,6 +129,18 @@ def period_csv(job_id: str, start: str, end: str):
     body = "﻿" + csv_text(flat_rows(results), COLUMNS)
     return Response(body, media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": f'attachment; filename="sites_{start}_to_{end}.csv"'})
+
+
+@app.get("/api/jobs/{job_id}/period.pdf")
+def period_pdf(job_id: str, start: str, end: str):
+    j = _load(job_id)
+    results = _period(j, start, end)
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "report.pdf"
+        write_report(path, results, j.state["summary"], j.state["provenance"])
+        body = path.read_bytes()
+    return Response(body, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="stack_report_{start}_to_{end}.pdf"'})
 
 
 @app.get("/api/jobs/{job_id}/scrubber")

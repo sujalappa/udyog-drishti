@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api, fileUrl, periodCsvUrl } from '../api'
+import { api, periodFileUrl } from '../api'
 import { monthLabel } from '../components/Charts'
 import EventLog from '../components/EventLog'
 import PeriodBar, { type Period } from '../components/PeriodBar'
@@ -102,8 +102,9 @@ export default function JobPage({ jobId }: { jobId: string }) {
             {job.event_counts.warning > 0 && <span className="chip chip-warning">{job.event_counts.warning} warning{job.event_counts.warning > 1 ? 's' : ''}</span>}
           </div>
         </div>
-        {done && job.outputs.exports.pdf && (
-          <a className="btn btn-primary" href={fileUrl(job.id, job.outputs.exports.pdf.file, true)} download>Download report</a>
+        {done && shown && (
+          <a className="btn btn-primary" href={periodFileUrl(job.id, 'pdf', shown.start, shown.end)} download
+            title={`PDF for ${monthLabel(shown.start)} – ${monthLabel(shown.end)}`}>Download report</a>
         )}
       </div>
 
@@ -146,10 +147,17 @@ export default function JobPage({ jobId }: { jobId: string }) {
           {tab === 'table' && <ResultsTable results={results} selected={selected} onSelect={(id) => { setSelected(id); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />}
           {tab === 'scrubber' && <div className="panel"><ScrubberCheck job={job} /></div>}
           {tab === 'sources' && <div className="panel"><SourcesView job={job} /></div>}
-          {tab === 'downloads' && <div className="panel"><DownloadsView job={job} />
-            {shown && <div className="panel-body"><a className="export-card" href={periodCsvUrl(job.id, shown.start, shown.end)} download>
-              <strong>Site table for {monthLabel(shown.start)} – {monthLabel(shown.end)} (CSV)</strong>
-              <span className="muted small">The PDF and other files cover the last 12 months</span></a></div>}</div>}
+          {tab === 'downloads' && <div className="panel">
+            {shown && <div className="panel-body export-grid">
+              <a className="export-card" href={periodFileUrl(job.id, 'pdf', shown.start, shown.end)} download>
+                <strong>PDF report, {monthLabel(shown.start)} – {monthLabel(shown.end)}</strong>
+                <span className="muted small">for the period selected above</span></a>
+              <a className="export-card" href={periodFileUrl(job.id, 'csv', shown.start, shown.end)} download>
+                <strong>Site table, {monthLabel(shown.start)} – {monthLabel(shown.end)} (CSV)</strong>
+                <span className="muted small">for the period selected above</span></a>
+            </div>}
+            <DownloadsView job={job} only={['geojson', 'kml']} note="last 12 months, as when the check ran" />
+          </div>}
           {tab === 'processing' && (
             <div className="run-grid">
               <div className="panel"><div className="panel-head"><h2>Steps</h2></div>

@@ -73,3 +73,17 @@ def test_period_changes_level_and_trend():
     # a period without a full January-May has no trend
     autumn = air.resummarise({"parli": default}, "2025-06", "2025-12")["parli"]
     assert autumn["so2_change"] is None and autumn["period"]["months"] == 7
+
+
+def test_report_covers_the_chosen_period(tmp_path):
+    from pypdf import PdfReader
+    from udyogdrishti.pipelines import write_report
+
+    months = air.months_since(2021, today=date(2026, 10, 1))
+    site = air.summarise("tiroda", _data(lambda y, m: 200.0, lambda y, m: 40.0, months), months)
+    results = air.resummarise({"tiroda": site}, "2023-01", "2023-12")
+    path = tmp_path / "r.pdf"
+    write_report(path, results, {"first_month": "2021-01", "latest_month": "2026-09", "capacity_mw": 3300,
+                                 "scrubbed": []}, air.SOURCES)
+    text = PdfReader(str(path)).pages[0].extract_text()
+    assert "2023-01 to 2023-12" in text and "12 months" in text
