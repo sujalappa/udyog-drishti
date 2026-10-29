@@ -7,14 +7,15 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import air, auth
 from .config import REPO_ROOT, settings
 from .jobs import Job, is_valid_job_id, list_jobs
-from .pipelines import STAGES, run_state_job
+from .exports import csv_text
+from .pipelines import COLUMNS, STAGES, counts_of, flat_rows, run_state_job
 
 FILENAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$")
 MONTH_RE = re.compile(r"^20\d\d-(0[1-9]|1[0-2])$")
@@ -85,6 +86,34 @@ def jobs() -> list[dict]:
 def job(job_id: str) -> dict:
     j = _load(job_id)
     return {**j.state, "events": j.events(), "results": _results(j)}
+
+
+def _period(j: Job, start: str, end: str) -> dict:
+    results = _results(j)
+    if results is None:
+        raise HTTPException(409, "This check has no results yet")
+    months = [p["month"] for p in next(iter(results.values()))["series"]]
+    if not (MONTH_RE.fullmatch(start) and MONTH_RE.fullmatch(end)) or start > end:
+        raise HTTPException(400, "Use months like 2025-01, with the start before the end")
+    if start < months[0] or end > months[-1]:
+        raise HTTPException(400, f"This check covers {months[0]} to {months[-1]}")
+    if sum(start <= m <= end for m in months) < 3:
+        raise HTTPException(400, "Pick at least 3 months: a single month is too noisy")
+    return air.resummarise(results, start, end)
+
+
+@app.get("/api/jobs/{job_id}/period")
+def period(job_id: str, start: str, end: str) -> dict:
+    results = _period(_load(job_id), start, end)
+    return {"start": start, "end": end, "results": results, "counts": counts_of(results)}
+
+
+@app.get("/api/jobs/{job_id}/period.csv")
+def period_csv(job_id: str, start: str, end: str):
+    results = _period(_load(job_id), start, end)
+    body = "﻿" + csv_text(flat_rows(results), COLUMNS)
+    return Response(body, media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="sites_{start}_to_{end}.csv"'})
 
 
 @app.get("/api/jobs/{job_id}/scrubber")

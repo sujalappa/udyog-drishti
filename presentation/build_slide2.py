@@ -75,7 +75,7 @@ fill(by_name["Text 10"], [[
 
 fill(by_name["Text 13"], [
     [("Koradi, Khaparkheda, Tiroda, Mauda", True), (": 9,360 MW exempted from SO₂ scrubbers (Jul 2025)", False)],
-    [("Chandrapur and Koradi", True), (": among India's top SO₂ hotspots in NASA data", False)],
+    [("Chandrapur", True), (": own stack reports show SO₂ ", False), ("~6× the limit", True), (" (2024–26)", False)],
     [("Nagpur over the PM10 limit on ", False), ("46 of 92", True), (" spring days in 2026", False)],
 ], size=9.5, bullets=True)
 
@@ -98,8 +98,8 @@ tf.word_wrap = True
 for side in ("left", "right", "top", "bottom"):
     setattr(tf, f"margin_{side}", 0)
 r = tf.paragraphs[0].add_run()
-r.text = ("Sources: MoEFCC notification, 11 Jul 2025; Greenpeace analysis of NASA OMI data; TechTimes analysis of "
-          "CPCB data, Aug 2026; CEEW 2024 and CSE on OCEMS; CREA, Jul 2026.")
+r.text = ("Sources: MoEFCC notification, 11 Jul 2025; Mahagenco CSTPS EC compliance reports to MoEF&CC, 2024–26; "
+          "TechTimes analysis of CPCB data, Aug 2026; CEEW 2024 and CSE on OCEMS; CREA, Jul 2026.")
 r.font.size = Pt(7)
 r.font.name = "Nirmala UI"
 r.font.color.rgb = MUTED

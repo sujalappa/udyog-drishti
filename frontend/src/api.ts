@@ -1,4 +1,4 @@
-import type { Job, JobListItem, ScrubberResult, UnitCollection } from './types'
+import type { Job, JobListItem, PeriodResult, ScrubberResult, UnitCollection } from './types'
 
 export interface AuthUser { username: string; role: 'admin' | 'user' }
 export interface UserRow extends AuthUser { created_at: string | null; builtin: boolean }
@@ -64,6 +64,8 @@ export const api = {
   createState: (startYear = 2019) => request<{ id: string }>('/api/jobs/state', json('POST', { start_year: startYear })),
   scrubber: (jobId: string, site: string, on: string, before = 12) =>
     request<ScrubberResult>(`/api/jobs/${jobId}/scrubber?${new URLSearchParams({ site, on, before: String(before) })}`),
+  period: (jobId: string, start: string, end: string) =>
+    request<PeriodResult>(`/api/jobs/${jobId}/period?${new URLSearchParams({ start, end })}`),
   unitsOf: (jobId: string, file: string) => request<UnitCollection>(fileUrl(jobId, file)),
 }
 
@@ -73,4 +75,10 @@ export const fileUrl = (jobId: string, file: string, download = false) => {
   if (token) query.set('token', token) // images and download links cannot send the sign-in header
   const qs = query.toString()
   return `/api/jobs/${jobId}/files/${encodeURIComponent(file)}${qs ? `?${qs}` : ''}`
+}
+
+export const periodCsvUrl = (jobId: string, start: string, end: string) => {
+  const query = new URLSearchParams({ start, end })
+  if (token) query.set('token', token)
+  return `/api/jobs/${jobId}/period.csv?${query}`
 }

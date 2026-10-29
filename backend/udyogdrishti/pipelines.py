@@ -22,13 +22,25 @@ STAGES = [
 ]
 COLUMNS = [
     ("name", "Site"), ("status", "Status"), ("reasons", "Why"), ("kind", "Type"), ("district", "District"),
-    ("mw", "Capacity (MW)"), ("so2_12m", "SO₂ above background, last 12 months (µmol/m²)"),
-    ("no2_12m", "NO₂ above background, last 12 months (µmol/m²)"), ("ratio_12m", "SO₂ ÷ NO₂"),
-    ("so2_change", "SO₂ change, latest Jan–May vs 2021-2024"), ("fgd", "Scrubber (FGD)"), ("fgd_note", "Scrubber notes"),
+    ("mw", "Capacity (MW)"), ("so2_mean", "SO₂ above background, period mean (µmol/m²)"),
+    ("no2_mean", "NO₂ above background, period mean (µmol/m²)"), ("ratio_mean", "SO₂ ÷ NO₂"),
+    ("so2_change", "SO₂ change, latest Jan–May in period vs 2021-2024"), ("fgd", "Scrubber (FGD)"), ("fgd_note", "Scrubber notes"),
     ("members", "Plants in the site"), ("lat", "Latitude"), ("lon", "Longitude"),
 ]
 STATUS_KML = {"check first": "ff0000c0", "watch": "ff00a5ff", "low": "ff50a050", "no data": "ff999999"}
 MAP_BBOX = air.BBOX
+
+
+def flat_rows(results: dict[str, dict]) -> list[dict]:
+    """Table rows, most urgent first, without the monthly series."""
+    order = {"check first": 0, "watch": 1, "low": 2, "no data": 3}
+    rows = sorted(results.values(), key=lambda r: (order[r["status"]], -(r["so2_mean"] or 0)))
+    return [{k: v for k, v in r.items() if k not in ("series", "dry", "period")} | {"reasons": ", ".join(r["reasons"])}
+            for r in rows]
+
+
+def counts_of(results: dict[str, dict]) -> dict[str, int]:
+    return {s: sum(r["status"] == s for r in results.values()) for s in ("check first", "watch", "low", "no data")}
 
 
 def run_state_job(job: Job) -> None:
@@ -56,7 +68,7 @@ def run_state_job(job: Job) -> None:
 
         job.start_stage("flags")
         results = {sid: air.summarise(sid, data[sid], months) for sid in air.SITES}
-        counts = {s: sum(r["status"] == s for r in results.values()) for s in ("check first", "watch", "low", "no data")}
+        counts = counts_of(results)
         job.path("results.json").write_text(json.dumps(results), encoding="utf-8")
         latest = f"{months[-1][0]}-{months[-1][1]:02d}"
         job.update("summary", {
@@ -94,10 +106,7 @@ def run_state_job(job: Job) -> None:
             job.skip_stage("maps", "Map layers unavailable")
 
         job.start_stage("outputs")
-        order = {"check first": 0, "watch": 1, "low": 2, "no data": 3}
-        rows = sorted(results.values(), key=lambda r: (order[r["status"]], -(r["so2_12m"] or 0)))
-        flat = [{k: v for k, v in r.items() if k not in ("series", "dry")} | {"reasons": ", ".join(r["reasons"])}
-                for r in rows]
+        flat = flat_rows(results)
         write_csv(job.path("sites.csv"), flat, COLUMNS)
         flat_by_id = {r["id"]: r for r in flat}
         write_geojson(job.path("sites_results.geojson"), fc, flat_by_id)

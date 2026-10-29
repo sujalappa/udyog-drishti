@@ -18,12 +18,12 @@ CONFIG = {
     "deck": "Udyog-drishti_AI_Seva_2026.pptx",
     "sector": "SUSTAINABILITY - ENERGY, CLIMATE AND OTHERS",
     "title": "Udyog-drishti AI",
-    "line": "Every big chimney in Maharashtra, checked from space each month: where to inspect first, and whether "
-            "a scrubber worked. Independent of the plants' own monitors.",
+    "line": "A monthly satellite check of SO₂ and NO₂ at Maharashtra's large coal power plants and industrial areas: "
+            "where to inspect first, and whether a scrubber worked. Independent of the plants' own monitors.",
     "subtheme": "Sub-theme: Industrial decarbonisation, pollution control and wastewater reuse",
     "image": "img/app_state.png",
     "facts": ["17 plants and industrial areas, monthly since 2019, in ~1 min",
-              "Sentinel-5P SO₂ and NO₂; spotted NTPC Mauda's scrubber"],
+              "Sentinel-5P SO₂ and NO₂; agrees with plants' official filings"],
 }
 
 ORANGE = RGBColor(0xF2, 0x8C, 0x28)

@@ -3,7 +3,8 @@ import type { ExpressionSpecification, Map as MLMap, MapLayerMouseEvent } from '
 import { useEffect, useRef, useState } from 'react'
 import { fileUrl } from '../api'
 import type { FeatureCollection } from 'geojson'
-import type { Job, UnitCollection } from '../types'
+import type { GeoJSONSource } from 'maplibre-gl'
+import type { Job, SiteResult, UnitCollection } from '../types'
 import { METRICS, STATUS, gradient, metricExpr, statusExpr, type Metric } from './colors'
 
 const abs = (p: string) => new URL(p, window.location.href).href
@@ -14,8 +15,23 @@ const MH_BOUNDS: [[number, number], [number, number]] = [[72.6, 15.6], [80.9, 22
 const RADIUS = ['case', ['==', ['get', 'mw'], null], 9,
   ['interpolate', ['linear'], ['sqrt', ['get', 'mw']], 20, 7, 63, 17]] as unknown as ExpressionSpecification
 
-export default function UnitMap({ job, units, selected, onSelect }: {
+function joinResults(units: UnitCollection, results: Record<string, SiteResult>) {
+  return {
+    ...units,
+    features: units.features.map((f) => {
+      const r = results[f.properties.id]
+      const { series: _s, dry: _d, period: _p, reasons, ...rest } = r ?? ({} as Record<string, unknown>)
+      void _s
+      void _d
+      void _p
+      return { ...f, properties: { ...f.properties, ...rest, reasons: Array.isArray(reasons) ? reasons.join(', ') : '' } }
+    }),
+  }
+}
+
+export default function UnitMap({ job, results, units, selected, onSelect }: {
   job: Job
+  results: Record<string, SiteResult>
   units: UnitCollection
   selected: string | null
   onSelect: (id: string | null) => void
@@ -31,16 +47,7 @@ export default function UnitMap({ job, units, selected, onSelect }: {
 
   useEffect(() => {
     if (!box.current) return
-    const joined = {
-      ...units,
-      features: units.features.map((f) => {
-        const r = job.results?.[f.properties.id]
-        const { series: _s, dry: _d, reasons, ...rest } = r ?? ({} as Record<string, unknown>)
-        void _s
-        void _d
-        return { ...f, properties: { ...f.properties, ...rest, reasons: Array.isArray(reasons) ? reasons.join(', ') : '' } }
-      }),
-    }
+    const joined = joinResults(units, results)
     const m = new maplibregl.Map({
       container: box.current,
       style: {
@@ -98,11 +105,16 @@ export default function UnitMap({ job, units, selected, onSelect }: {
   }, [ready, colorBy, metric, basemap, raster, selected, rasters])
 
   useEffect(() => {
+    const src = map.current?.getSource('units') as GeoJSONSource | undefined
+    if (ready && src) src.setData(joinResults(units, results) as unknown as FeatureCollection)
+  }, [ready, units, results])
+
+  useEffect(() => {
     const m = map.current
     if (!ready || !m || !selected) return
-    const r = job.results?.[selected]
+    const r = results[selected]
     if (r && !m.getBounds().contains([r.lon, r.lat])) m.easeTo({ center: [r.lon, r.lat] })
-  }, [ready, selected, job.results])
+  }, [ready, selected, results])
 
   const activeRaster = raster ? job.outputs.rasters[raster] : null
   return (

@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
-import { api, fileUrl } from '../api'
+import { useEffect, useMemo, useState } from 'react'
+import { api, fileUrl, periodCsvUrl } from '../api'
+import { monthLabel } from '../components/Charts'
 import EventLog from '../components/EventLog'
+import PeriodBar, { type Period } from '../components/PeriodBar'
 import ResultsTable from '../components/ResultsTable'
 import ScrubberCheck from '../components/ScrubberCheck'
 import SiteDetail from '../components/SiteDetail'
@@ -8,21 +10,21 @@ import { DownloadsView, SourcesView } from '../components/SourcesView'
 import StatusChip from '../components/StatusChip'
 import Stepper from '../components/Stepper'
 import UnitMap from '../components/UnitMap'
-import type { Job, UnitCollection } from '../types'
+import type { Job, PeriodResult, Status, UnitCollection } from '../types'
 
 type Tab = 'table' | 'scrubber' | 'sources' | 'downloads' | 'processing'
 const TABS: Record<Tab, string> = {
   table: 'Sites', scrubber: 'Scrubber check', sources: 'Sources and method', downloads: 'Downloads', processing: 'Processing',
 }
 
-function Kpis({ job }: { job: Job }) {
+function Kpis({ job, counts, period }: { job: Job; counts: Record<Status, number>; period: Period }) {
   const s = job.summary
   const scrubbed = (s.scrubbed ?? []).map((k) => job.results?.[k]?.name).filter(Boolean)
   const items: [string, string, string][] = [
-    [`${s.counts?.['check first'] ?? 0}`, 'sites to check first', 'high SO₂, or SO₂ rising'],
-    [`${s.counts?.watch ?? 0}`, 'sites to watch', `of ${s.sites} sites, ${s.capacity_mw?.toLocaleString()} MW of coal`],
+    [`${counts['check first'] ?? 0}`, 'sites to check first', 'high SO₂, or SO₂ rising, in this period'],
+    [`${counts.watch ?? 0}`, 'sites to watch', `of ${s.sites} sites, ${s.capacity_mw?.toLocaleString()} MW of coal`],
     [`${scrubbed.length}`, 'reference plants with scrubbers', scrubbed.join(', ')],
-    [`${s.first_month?.slice(0, 4)}–${s.latest_month?.slice(0, 4)}`, 'monthly record', `${s.first_month} to ${s.latest_month}`],
+    [`${monthLabel(period.start)} – ${monthLabel(period.end)}`, 'period shown', `record available ${s.first_month} to ${s.latest_month}`],
   ]
   return (
     <div className="kpis">
@@ -40,6 +42,10 @@ export default function JobPage({ jobId }: { jobId: string }) {
   const [selected, setSelected] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('table')
   const [stage, setStage] = useState<string | null>(null)
+  const [period, setPeriod] = useState<Period | null>(null)
+  const [view, setView] = useState<PeriodResult | null>(null)
+  const [periodBusy, setPeriodBusy] = useState(false)
+  const [periodError, setPeriodError] = useState('')
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
@@ -63,10 +69,28 @@ export default function JobPage({ jobId }: { jobId: string }) {
     if (done && job?.outputs.layers.units && !units) api.unitsOf(job.id, job.outputs.layers.units.file).then(setUnits).catch(() => {})
   }, [done, job, units])
 
+  const months = useMemo(() => Object.values(job?.results ?? {})[0]?.series.map((p) => p.month) ?? [], [job?.results])
+  const first = Object.values(job?.results ?? {})[0]
+  const shown: Period | null = period ?? (first?.period ? { start: first.period.start, end: first.period.end } : null)
+
+  useEffect(() => {
+    if (!job || !period) return
+    let alive = true
+    setPeriodBusy(true)
+    setPeriodError('')
+    api.period(job.id, period.start, period.end)
+      .then((v) => { if (alive) setView(v) })
+      .catch((e) => { if (alive) setPeriodError(e instanceof Error ? e.message : 'Could not update the period') })
+      .finally(() => { if (alive) setPeriodBusy(false) })
+    return () => { alive = false }
+  }, [job, period])
+
   if (error) return <main className="page"><div className="error-box">{error}</div></main>
   if (!job) return <main className="page"><p className="muted">Loading…</p></main>
 
-  const result = selected ? job.results?.[selected] : null
+  const results = view?.results ?? job.results ?? {}
+  const counts = view?.counts ?? job.summary.counts ?? ({} as Record<Status, number>)
+  const result = selected ? results[selected] : null
   return (
     <main className="page job-page">
       <div className="crumbs"><a href="#/">Checks</a> / {job.name}</div>
@@ -100,9 +124,11 @@ export default function JobPage({ jobId }: { jobId: string }) {
 
       {done && (
         <>
-          <Kpis job={job} />
+          {shown && <PeriodBar months={months} value={shown} onChange={setPeriod} busy={periodBusy} />}
+          {periodError && <div className="error-box">{periodError}</div>}
+          {shown && <Kpis job={job} counts={counts} period={shown} />}
           <div className="result-grid">
-            {units ? <UnitMap job={job} units={units} selected={selected} onSelect={setSelected} /> : <div className="map-wrap map-loading">Loading map…</div>}
+            {units ? <UnitMap job={job} results={results} units={units} selected={selected} onSelect={setSelected} /> : <div className="map-wrap map-loading">Loading map…</div>}
             <aside className="panel detail">
               {result ? <SiteDetail r={result} /> : (
                 <div className="detail-empty">
@@ -117,10 +143,13 @@ export default function JobPage({ jobId }: { jobId: string }) {
               <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{TABS[t]}</button>
             ))}
           </div>
-          {tab === 'table' && <ResultsTable job={job} selected={selected} onSelect={(id) => { setSelected(id); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />}
+          {tab === 'table' && <ResultsTable results={results} selected={selected} onSelect={(id) => { setSelected(id); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />}
           {tab === 'scrubber' && <div className="panel"><ScrubberCheck job={job} /></div>}
           {tab === 'sources' && <div className="panel"><SourcesView job={job} /></div>}
-          {tab === 'downloads' && <div className="panel"><DownloadsView job={job} /></div>}
+          {tab === 'downloads' && <div className="panel"><DownloadsView job={job} />
+            {shown && <div className="panel-body"><a className="export-card" href={periodCsvUrl(job.id, shown.start, shown.end)} download>
+              <strong>Site table for {monthLabel(shown.start)} – {monthLabel(shown.end)} (CSV)</strong>
+              <span className="muted small">The PDF and other files cover the last 12 months</span></a></div>}</div>}
           {tab === 'processing' && (
             <div className="run-grid">
               <div className="panel"><div className="panel-head"><h2>Steps</h2></div>

@@ -40,10 +40,10 @@ export default function Home() {
   return (
     <main>
       <section className="hero">
-        <h1>Every big chimney in Maharashtra, every month</h1>
+        <h1>Satellite check on Maharashtra's power plants and industrial areas</h1>
         <p className="lead">
-          SO₂ and NO₂ over each coal plant and polluted industrial area from Sentinel-5P, independent of the plants'
-          own monitors. Shows where to inspect first and whether a scrubber made a difference.
+          Monthly SO₂ and NO₂ over large coal power plants and polluted industrial areas, measured by the Sentinel-5P
+          satellite rather than reported by the plants. Shows where to inspect first and whether a scrubber made a difference.
         </p>
       </section>
 

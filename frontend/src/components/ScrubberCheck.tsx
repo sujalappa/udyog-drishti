@@ -8,15 +8,16 @@ const pct = (v: number | null) => (v == null ? '–' : `${v > 0 ? '+' : ''}${(v 
 
 function verdict(c: ScrubberResult): { text: string; tone: string } {
   if (c.net_change == null) return { text: 'Not enough NO₂ at this site to compare.', tone: 'muted' }
-  if (c.net_change <= -0.25) return { text: 'SO₂ fell against NO₂ well beyond exempt plants: consistent with a working scrubber.', tone: 'ok' }
-  if (c.net_change >= 0.25) return { text: 'SO₂ rose against NO₂ beyond exempt plants: worth an inspection.', tone: 'bad' }
-  return { text: 'No clear change beyond what exempt plants show.', tone: 'muted' }
+  if (c.net_change <= -0.25) return { text: 'SO₂ fell against NO₂ well beyond plants without scrubbers: consistent with a working scrubber.', tone: 'ok' }
+  if (c.net_change >= 0.25) return { text: 'SO₂ rose against NO₂ beyond plants without scrubbers: worth an inspection.', tone: 'bad' }
+  if (c.net_change <= -0.1) return { text: 'SO₂ fell against NO₂ more than at plants without scrubbers, but less than a full scrubber would give: possibly partial (some units scrubbed). Confirm with stack readings.', tone: 'partial' }
+  return { text: 'No clear change beyond what plants without scrubbers show.', tone: 'muted' }
 }
 
-/** Before/after SO2-to-NO2 ratio at one site, against the same change at exempt plants without scrubbers. */
+/** Before/after SO2-to-NO2 ratio at one site, against the same change at plants without scrubbers. */
 export default function ScrubberCheck({ job }: { job: Job }) {
   const results = job.results ?? {}
-  const sites = Object.values(results).filter((r) => r.ratio_12m != null || r.fgd_date)
+  const sites = Object.values(results).filter((r) => r.ratio_mean != null || r.fgd_date)
   const months = Object.values(results)[0]?.series.map((p) => p.month) ?? []
   const first = results.mauda ? 'mauda' : sites[0]?.id ?? ''
   const [site, setSite] = useState(first)
@@ -52,7 +53,7 @@ export default function ScrubberCheck({ job }: { job: Job }) {
       <div className="cleanup-head">
         <div>
           <h3 className="sub">Is the scrubber working?</h3>
-          <p className="muted small">A scrubber removes SO₂ but not NO₂, and NO₂ follows how hard the plant runs. So when a scrubber works, SO₂ ÷ NO₂ drops. This compares the 12 months before a date with the months after, and subtracts the change at exempt plants without scrubbers.</p>
+          <p className="muted small">A scrubber removes SO₂ but not NO₂, and NO₂ follows how hard the plant runs. So when a scrubber works, SO₂ ÷ NO₂ drops. This compares the 12 months before a date with the months after, and subtracts the change at plants without scrubbers.</p>
         </div>
         <div className="cleanup-pick">
           <label>Site<select value={site} onChange={(e) => pick(e.target.value)}>
@@ -64,7 +65,7 @@ export default function ScrubberCheck({ job }: { job: Job }) {
       {lines && <SeriesLine points={lines.site} reference={lines.ref} mark={on} color={GAS.so2} height={150} />}
       <div className="chart-note">
         <span className="swatch-inline" style={{ background: GAS.so2 }} />{results[site]?.name}
-        <span className="swatch-inline dashed" />median of {lines?.n ?? 0} exempt plants · SO₂ ÷ NO₂, 6-month rolling mean · Sentinel-5P
+        <span className="swatch-inline dashed" />median of {lines?.n ?? 0} plants without scrubbers · SO₂ ÷ NO₂, 6-month rolling mean · Sentinel-5P
       </div>
       {error && <div className="error-box">{error}</div>}
       {check && v && (
@@ -72,13 +73,13 @@ export default function ScrubberCheck({ job }: { job: Job }) {
           <div className="kpis cleanup-kpis">
             <div className="kpi"><div className="value">{check.ratio_before ?? '–'} → {check.ratio_after ?? '–'}</div><div className="label">SO₂ ÷ NO₂</div><div className="note">{check.months_before} months before, {check.months_after} after</div></div>
             <div className="kpi"><div className="value">{pct(check.ratio_change)}</div><div className="label">change at this site</div><div className="note">SO₂ {check.so2_before ?? '–'} → {check.so2_after ?? '–'} µmol/m²</div></div>
-            <div className="kpi"><div className="value">{pct(check.control_change)}</div><div className="label">change at exempt plants</div><div className="note">median, same months</div></div>
-            <div className="kpi"><div className="value">{pct(check.net_change)}</div><div className="label">net change</div><div className="note">site minus exempt plants</div></div>
+            <div className="kpi"><div className="value">{pct(check.control_change)}</div><div className="label">change without scrubbers</div><div className="note">median, same months</div></div>
+            <div className="kpi"><div className="value">{pct(check.net_change)}</div><div className="label">net change</div><div className="note">site minus plants without scrubbers</div></div>
           </div>
           <div className={`verdict verdict-${v.tone}`}>{v.text}</div>
         </>
       )}
-      <p className="muted small">Coal sulphur, the season and satellite processing also move the ratio; that is why exempt plants are the reference. Months after the monsoon onset carry more noise, so prefer at least a year after the date.</p>
+      <p className="muted small">Coal sulphur, the season and satellite processing also move the ratio; that is why plants without scrubbers are the reference. Chandrapur's own stack readings show the satellite ratio drifting down ~10–15% since 2023 with no real change. Months after the monsoon onset carry more noise, so prefer at least a year after the date.</p>
     </div>
   )
 }

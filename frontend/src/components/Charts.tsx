@@ -11,7 +11,7 @@ export function rolling(points: Pt[], n = 6): Pt[] {
   })
 }
 
-/** Monthly line chart; optional dashed reference line (for example exempt plants) and a marked month. */
+/** Monthly line chart; optional dashed reference line (for example plants without scrubbers) and a marked month. */
 export function SeriesLine({ points, color, reference, mark, height = 80, unit = '' }: {
   points: Pt[]
   color: string
@@ -55,10 +55,11 @@ export function SeriesLine({ points, color, reference, mark, height = 80, unit =
 }
 
 /** Grouped bars per year for two values (SO2 and NO2 in the January–May dry season). */
-export function YearBars({ rows, colors, labels }: {
+export function YearBars({ rows, colors, labels, highlight }: {
   rows: { year: number; a: number | null; b: number | null }[]
   colors: [string, string]
   labels: [string, string]
+  highlight?: number
 }) {
   const max = Math.max(1, ...rows.flatMap((r) => [r.a ?? 0, r.b ?? 0]))
   const h = (v: number | null) => `${v == null ? 0 : Math.max(0, (v / max) * 100)}%`
@@ -66,7 +67,7 @@ export function YearBars({ rows, colors, labels }: {
     <div className="ybars">
       <div className="ybars-plot">
         {rows.map((r) => (
-          <div key={r.year} className="ybar-group" title={`${r.year}: ${labels[0]} ${r.a ?? '–'}, ${labels[1]} ${r.b ?? '–'}`}>
+          <div key={r.year} className={`ybar-group ${r.year === highlight ? 'hl' : ''}`} title={`${r.year}: ${labels[0]} ${r.a ?? '–'}, ${labels[1]} ${r.b ?? '–'}`}>
             <div className="ybar" style={{ height: h(r.a), background: colors[0] }} />
             <div className="ybar" style={{ height: h(r.b), background: colors[1] }} />
           </div>
@@ -75,7 +76,7 @@ export function YearBars({ rows, colors, labels }: {
       <div className="ybars-axis">{rows.map((r) => <span key={r.year}>{String(r.year).slice(2)}</span>)}</div>
       <div className="chart-note">
         <span className="swatch-inline" style={{ background: colors[0] }} />{labels[0]}
-        <span className="swatch-inline" style={{ background: colors[1] }} />{labels[1]} · January–May each year · µmol/m² above background
+        <span className="swatch-inline" style={{ background: colors[1] }} />{labels[1]} · January–May each year · µmol/m² above background{highlight ? ` · shaded: ${highlight}, used for the trend` : ''}
       </div>
     </div>
   )

@@ -70,3 +70,20 @@ Enhancement = mean column within 15 km of the plant minus the median of a 40–8
 - **Mauda found from space:** NTPC Mauda's SO₂ ÷ NO₂ fell from 4.6 (Jun 2024) to 2.9 (Jun 2025) and 2.0 (Jun 2026) while Tiroda stayed ~4.5. Scrubber check from Jan 2025: ratio 4.54 → 2.80 (−38%), exempt plants −8%, net −30%. Afterwards confirmed: NTPC Mauda's FGD and gypsum units are in service ([The Live Nagpur, 23 Oct 2026](https://thelivenagpur.com/2026/10/23/ntpc-mouda-conducts-awareness-programme-on-best-environmental-practices-in-collaboration-with-mpcb/); wet limestone FGD by [Mitsubishi Power](https://power.mhi.com/regions/ind/projects/mouda)). Mauda is Category C (exempt) but built FGD anyway.
 - **Koradi:** net −5% after May 2026 (FGD target): no clear scrubber signal yet; recheck after a full dry season.
 - **Tiroda placebo** (no scrubber, date Jun 2025): net change +0.1%.
+
+## Validation against official filings (29 Oct 2026)
+
+Plants file six-monthly Environmental Clearance (EC) compliance reports with MoEF&CC; Mahagenco and NTPC publish them.
+
+| Check | Official record | Satellite (Udyog-drishti) | Agrees? |
+|---|---|---|---|
+| Chandrapur SO₂ level | Stack SO₂ 1,200–1,330 mg/Nm³ on all 7 units, every month Jan 2024 – Jun 2026; limit 200 (500 MW units) and 600 (210 MW units), so ~6× ([Mahagenco CSTPS EC reports](https://mahagenco.in/EC-Compliance-report), stack monitoring annexure; Jul–Dec 2025 report returns 404) | Highest SO₂ above background of all 17 sites; "check first" | Yes |
+| Chandrapur scrubber | Stack SO₂ flat through Jun 2026: no FGD working; norm review requested Jan 2026 | No scrubber signal (net +3% from Jan 2026) | Yes |
+| Chandrapur SO₂ ÷ NOx level | Stack molar ratio 2.8–3.2 (SO₂ 64 g/mol, NOx as NO₂ 46 g/mol) | Column ratio 2.2–2.9 | Close |
+| Chandrapur ratio trend | Flat 2024–2026 | Falls ~10–15% 2023→2026 | **No: satellite drift.** This is why the scrubber check subtracts plants without scrubbers; raw year-on-year trends need care |
+| Koradi scrubber | Nov 2023 FGD contract terminated (vendor's bank guarantee not submitted); re-tendered 11 Jun 2025; deadline 31 Dec 2027 (Mahagenco Koradi 3×660 MW EC report, status Dec 2025) | No clear scrubber signal | Yes |
+| Mauda scrubber | "FGD system for Unit-3 & 4 is in service" (Stage II, 1,320 of 2,320 MW); Category C ([NTPC Mauda Stage-II HYC EC report Oct 25–Mar 26](https://ntpc.co.in/sites/default/files/hyc_docs/Mauda%20STPP%20Stage-II_HYC_EC_Report_Oct_25_Mar_26.pdf)) | Ratio −38% from Jan 2025 vs −14% at plants without scrubbers: net −24% (partial; matches only Stage II scrubbed) | Yes |
+
+- Reference group for the scrubber check is now every site with no scrubber, including Chandrapur (best-documented). Earlier figure (net −30%) used only exempt Category C plants.
+- Not validated: absolute emissions (t/yr), the "check first"/"watch" thresholds (ours), plants other than these three. The NTPC report gives stack particulates only, not SO₂.
+- Extracted Chandrapur stack data: `research/official/chandrapur_stack_monthly.json` (mg/Nm³ per unit 3–9, null = unit shut down).

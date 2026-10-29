@@ -139,9 +139,9 @@ for i, (label, old, new) in enumerate(rows, start=1):
     set_cell(table.cell(i, 0), label, bold=True, color=NAVY, size=9)
     set_cell(table.cell(i, 1), old, size=8.5)
     set_cell(table.cell(i, 2), new, size=8.5, bold=True)
-fill(sh["Text 27"], [[("Does not rely on the polluter's own data. It spotted the scrubber at ", False),
-                      ("NTPC Mauda", True), (" from space: SO₂ ÷ NO₂ fell ", False), ("38%", True),
-                      (" since 2025 vs 8% at exempt plants. Mauda's FGD was then confirmed in service.", False)]],
+fill(sh["Text 27"], [[("Independent of the polluter's data, yet it agrees with official filings: ", False),
+                      ("Chandrapur", True), (" (flagged here) reports SO₂ ~6× the limit; ", False), ("Mauda's", True),
+                      (" SO₂ ÷ NO₂ fell 38% vs 14% at unscrubbed plants, and NTPC confirms its scrubbers.", False)]],
      size=9.5)
 
 # ---------------------------------------------------------------- slide 4: feasibility
@@ -184,9 +184,10 @@ fill(sh["Text 8"], ["14 plant sites and 3 industrial areas, monthly"], color=MUT
 fill(sh["Text 10"], [[("Months → 1 min", True)]], color=NAVY, size=24, align=PP_ALIGN.CENTER)
 fill(sh["Text 11"], [[("Saving in time", True)]], color=INK, size=11, align=PP_ALIGN.CENTER)
 fill(sh["Text 12"], ["statewide screen vs plant-by-plant inspection"], color=MUTED, size=9, align=PP_ALIGN.CENTER)
-fill(sh["Text 14"], [[("−30%", True)]], color=NAVY, size=28, align=PP_ALIGN.CENTER)
-fill(sh["Text 15"], [[("Scrubber seen from space", True)]], color=INK, size=11, align=PP_ALIGN.CENTER)
-fill(sh["Text 16"], ["NTPC Mauda, SO₂ ÷ NO₂ vs exempt plants"], color=MUTED, size=9, align=PP_ALIGN.CENTER)
+fill(sh["Text 14"], [[("3 of 3", True)]], color=NAVY, size=28, align=PP_ALIGN.CENTER)
+fill(sh["Text 15"], [[("Checks vs official filings", True)]], color=INK, size=11, align=PP_ALIGN.CENTER)
+fill(sh["Text 16"], ["Chandrapur, Koradi, Mauda agree with stack and scrubber records"], color=MUTED, size=9,
+     align=PP_ALIGN.CENTER)
 fill(sh["Text 19"], [
     "Inspections go first where SO₂ is highest",
     "Cleaner air around Nagpur and Chandrapur",
@@ -203,7 +204,7 @@ fill(sh["Text 25"], [
     "Next: drone gas checks; landfill methane",
 ], size=9.5, bullets=True)
 textbox(s5, 0.5, 5.12, 5.4, 0.3, ["Sources: Global Power Plant Database (capacity); Udyog-drishti run, Jan 2019–Sep 2026; "
-                                  "The Live Nagpur, 23 Oct 2026 (Mauda FGD in service). Server cost is an estimate."],
+                                  "Mahagenco and NTPC EC compliance reports to MoEF&CC (2024–26). Server cost is an estimate."],
         size=6.5, color=MUTED)
 
 # ---------------------------------------------------------------- slide 6: team

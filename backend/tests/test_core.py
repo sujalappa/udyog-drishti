@@ -16,7 +16,7 @@ def test_months_since_stops_at_last_complete_month():
 def test_summarise_flags_high_and_rising_so2():
     months = air.months_since(2021, today=date(2026, 10, 1))
     high = air.summarise("tiroda", _data(lambda y, m: 200.0, lambda y, m: 40.0, months), months)
-    assert high["status"] == "check first" and high["reasons"] == ["high SO₂"] and high["ratio_12m"] == 5.0
+    assert high["status"] == "check first" and high["reasons"] == ["high SO₂"] and high["ratio_mean"] == 5.0
     rising = air.summarise("parli", _data(lambda y, m: 100.0 if y == 2026 else 60.0, lambda y, m: 30.0, months), months)
     assert "SO₂ rising" in rising["reasons"] and rising["so2_change"] > 0.25
     low = air.summarise("nashik", _data(lambda y, m: 10.0, lambda y, m: 20.0, months), months)
@@ -60,3 +60,16 @@ def test_every_site_is_described():
     for sid, s in air.SITES.items():
         assert s["fgd"] in ("yes", "no", "planned", None), sid
         assert s["fgd_note"] and s["members"] and 15 < s["lat"] < 23 and 72 < s["lon"] < 81
+
+
+def test_period_changes_level_and_trend():
+    months = air.months_since(2021, today=date(2026, 10, 1))
+    data = _data(lambda y, m: 200.0 if y == 2026 else 60.0, lambda y, m: 40.0, months)
+    default = air.summarise("parli", data, months)
+    assert default["period"] == {"start": "2025-10", "end": "2026-09", "months": 12}
+    assert default["status"] == "check first"
+    old = air.resummarise({"parli": default}, "2023-01", "2023-12")["parli"]
+    assert old["so2_mean"] == 60.0 and old["status"] == "watch" and old["dry_year"] == 2023
+    # a period without a full January-May has no trend
+    autumn = air.resummarise({"parli": default}, "2025-06", "2025-12")["parli"]
+    assert autumn["so2_change"] is None and autumn["period"]["months"] == 7

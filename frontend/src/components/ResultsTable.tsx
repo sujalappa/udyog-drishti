@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { Job, SiteResult } from '../types'
+import type { SiteResult } from '../types'
 import { STATUS, fgdOf } from './colors'
 
 type Col = { key: keyof SiteResult; label: string; source?: string; num?: boolean }
@@ -10,23 +10,23 @@ const COLS: Col[] = [
   { key: 'reasons', label: 'Why' },
   { key: 'district', label: 'District' },
   { key: 'mw', label: 'MW', source: 'GPPD', num: true },
-  { key: 'so2_12m', label: 'SO₂', source: 'above background, 12 months', num: true },
-  { key: 'no2_12m', label: 'NO₂', source: 'above background, 12 months', num: true },
-  { key: 'ratio_12m', label: 'SO₂ ÷ NO₂', source: 'Sentinel-5P', num: true },
-  { key: 'so2_change', label: 'SO₂ trend', source: 'Jan–May vs 2021-24', num: true },
+  { key: 'so2_mean', label: 'SO₂', source: 'above background, period', num: true },
+  { key: 'no2_mean', label: 'NO₂', source: 'above background, period', num: true },
+  { key: 'ratio_mean', label: 'SO₂ ÷ NO₂', source: 'Sentinel-5P', num: true },
+  { key: 'so2_change', label: 'SO₂ trend', source: 'latest Jan–May vs 2021-24', num: true },
   { key: 'fgd', label: 'Scrubber', source: 'notification, company reports' },
 ]
 const ORDER = ['check first', 'watch', 'low', 'no data']
 
-export default function ResultsTable({ job, selected, onSelect }: {
-  job: Job
+export default function ResultsTable({ results, selected, onSelect }: {
+  results: Record<string, SiteResult>
   selected: string | null
   onSelect: (id: string) => void
 }) {
   const [sort, setSort] = useState<{ key: keyof SiteResult; asc: boolean }>({ key: 'status', asc: true })
   const [q, setQ] = useState('')
   const rows = useMemo(() => {
-    const all = Object.entries(job.results ?? {}).map(([id, r]) => ({ id, r }))
+    const all = Object.entries(results).map(([id, r]) => ({ id, r }))
     const filtered = q ? all.filter(({ r }) => r.name.toLowerCase().includes(q.toLowerCase())) : all
     const val = (r: SiteResult) => sort.key === 'status' ? ORDER.indexOf(r.status) : r[sort.key]
     return filtered.sort((a, b) => {
@@ -34,9 +34,9 @@ export default function ResultsTable({ job, selected, onSelect }: {
       if (x == null) return 1
       if (y == null) return -1
       const c = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
-      return (sort.asc ? c : -c) || (b.r.so2_12m ?? 0) - (a.r.so2_12m ?? 0)
+      return (sort.asc ? c : -c) || (b.r.so2_mean ?? 0) - (a.r.so2_mean ?? 0)
     })
-  }, [job.results, sort, q])
+  }, [results, sort, q])
 
   const cell = (c: Col, r: SiteResult) => {
     const v = r[c.key]

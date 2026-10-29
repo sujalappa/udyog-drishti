@@ -11,7 +11,7 @@ export const STATUS: Record<Status, { label: string; color: string }> = {
 export const FGD: Record<string, { label: string; color: string }> = {
   yes: { label: 'Scrubber in service', color: '#2f7d5b' },
   planned: { label: 'Scrubber planned', color: '#8a6d1f' },
-  no: { label: 'Exempt, no scrubber', color: '#9a3b2b' },
+  no: { label: 'No scrubber', color: '#9a3b2b' },
   unknown: { label: 'Not checked', color: '#7c7869' },
 }
 export const fgdOf = (f: Fgd) => FGD[f ?? 'unknown']
@@ -27,11 +27,11 @@ export interface Metric {
 }
 
 export const METRICS: Metric[] = [
-  { key: 'so2_12m', label: 'SO₂ above background', unit: 'µmol/m², last 12 months', source: 'Sentinel-5P TROPOMI',
+  { key: 'so2_mean', label: 'SO₂ above background', unit: 'µmol/m², mean over the period', source: 'Sentinel-5P TROPOMI',
     stops: [[0, '#fdf1e2'], [50, '#fdd0a2'], [100, '#fd8d3c'], [175, '#d94801'], [250, '#7f2704']] },
-  { key: 'no2_12m', label: 'NO₂ above background', unit: 'µmol/m², last 12 months', source: 'Sentinel-5P TROPOMI',
+  { key: 'no2_mean', label: 'NO₂ above background', unit: 'µmol/m², mean over the period', source: 'Sentinel-5P TROPOMI',
     stops: [[0, '#f4f1f8'], [25, '#bfd3e6'], [50, '#8c96c6'], [75, '#88419d'], [100, '#4d004b']] },
-  { key: 'ratio_12m', label: 'SO₂ ÷ NO₂', unit: 'low = scrubbed or gas/urban', source: 'Sentinel-5P TROPOMI',
+  { key: 'ratio_mean', label: 'SO₂ ÷ NO₂', unit: 'low = scrubbed or gas/urban', source: 'Sentinel-5P TROPOMI',
     stops: [[0.5, '#2f7d5b'], [2, '#d9d27a'], [3.5, '#e07b1a'], [5, '#9a2b12']] },
 ]
 

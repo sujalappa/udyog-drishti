@@ -84,11 +84,14 @@ export interface SiteResult {
   fgd: Fgd
   fgd_date: string | null
   fgd_note: string
+  official: string | null
+  official_source: string | null
   lat: number
   lon: number
-  so2_12m: number | null
-  no2_12m: number | null
-  ratio_12m: number | null
+  period: { start: string; end: string; months: number }
+  so2_mean: number | null
+  no2_mean: number | null
+  ratio_mean: number | null
   dry: DryPoint[]
   dry_year: number | null
   so2_change: number | null
@@ -110,6 +113,13 @@ export interface ScrubberResult {
   control_change: number | null
   net_change: number | null
   controls: Record<string, number | null>
+}
+
+export interface PeriodResult {
+  start: string
+  end: string
+  results: Record<string, SiteResult>
+  counts: Record<Status, number>
 }
 
 export interface Summary {

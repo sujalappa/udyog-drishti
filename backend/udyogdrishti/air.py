@@ -31,7 +31,7 @@ MAX_CLOUD = 0.3
 UMOL = 1e6                                  # mol/m2 -> µmol/m2
 MIN_NO2_FOR_RATIO = 15.0                    # µmol/m2; below this the ratio is noise
 DRY_MONTHS = (1, 2, 3, 4, 5)                # clear skies, no monsoon washout: compare years on these months
-SO2_DETECTED, SO2_HIGH = 40.0, 150.0        # µmol/m2, mean of the last 12 months
+SO2_DETECTED, SO2_HIGH = 40.0, 150.0        # µmol/m2, mean over the period (default: last 12 months)
 RISING = 0.25                               # latest dry season vs the 2021-2024 dry seasons
 
 _N = "Jul 2025 notification as reported by The News Dirt (16 Jul 2025)"
@@ -39,25 +39,36 @@ SITES = {
     "chandrapur": {"name": "Chandrapur STPS + Dhariwal", "kind": "Coal power", "district": "Chandrapur",
                    "lon": 79.27, "lat": 20.007, "mw": 3940,
                    "members": "Mahagenco Chandrapur STPS (3,340 MW in GPPD; 2,920 MW now), Dhariwal Tadali (600 MW)",
-                   "fgd": "planned", "fgd_date": "2026-07",
-                   "fgd_note": f"Category B, case-by-case ({_N}). CSTPS asked for a review of its SO₂ norm in Jan "
-                               "2026 (Mahagenco EC compliance report). Mahagenco targeted FGD on its 500 MW units for "
-                               "Jan–Jul 2026 (annual report 2023-24); commissioning not confirmed."},
+                   "fgd": "no",
+                   "fgd_note": f"Category B, case-by-case ({_N}). No scrubber in service by Jun 2026: the plant's own "
+                               "stack readings stay at full SO₂ (see official record). CSTPS asked for a review of its "
+                               "SO₂ norm in Jan 2026; the expert committee met on 21 May 2026.",
+                   "official": "Stack SO₂ 1,200–1,330 mg/Nm³ on every unit, every month Jan 2024 – Jun 2026, against a "
+                               "limit of 200 (500 MW units) and 600 (210 MW units): about 6 times the limit. Stack "
+                               "SO₂ ÷ NOx (molar) 2.8–3.2.",
+                   "official_source": "Mahagenco, CSTPS six-monthly EC compliance reports to MoEF&CC, Jan 2024 – "
+                                      "Jun 2026 (stack monitoring annexure; Jul–Dec 2025 report not online)"},
     "koradi": {"name": "Koradi + Khaparkheda", "kind": "Coal power", "district": "Nagpur", "lon": 79.106,
                "lat": 21.262, "mw": 3740,
                "members": "Mahagenco Koradi (2,400 MW), Mahagenco Khaparkheda (1,340 MW), 4 km apart",
-               "fgd": "planned", "fgd_date": "2026-05",
-               "fgd_note": f"Exempt, over 10 km from Nagpur ({_N}). FGD for Koradi units 8–10 (3×660 MW) awarded "
-                           "Nov 2023, targeted May 2026 (Mahagenco annual report 2023-24); EC deadline 31 Dec 2026. "
-                           "Commissioning not confirmed."},
+               "fgd": "planned",
+               "fgd_note": f"Exempt, over 10 km from Nagpur ({_N}). FGD for Koradi units 8–10 still to be built "
+                           "(see official record).",
+               "official": "No scrubber yet. The Nov 2023 FGD contract for units 8–10 was terminated when the vendor did "
+                           "not submit a performance bank guarantee; a new tender (wet limestone FGD) was floated on "
+                           "11 Jun 2025 and bids are under scrutiny. Deadline 31 Dec 2027.",
+               "official_source": "Mahagenco, Koradi TPS 3×660 MW EC compliance report to MoEF&CC, status Dec 2025"},
     "tiroda": {"name": "Tiroda (Adani)", "kind": "Coal power", "district": "Gondia", "lon": 79.9671, "lat": 21.4129,
                "mw": 3300, "members": "Adani Power Tiroda (3,300 MW)", "fgd": "no",
                "fgd_note": f"Category C, exempt ({_N})."},
     "mauda": {"name": "Mauda (NTPC)", "kind": "Coal power", "district": "Nagpur", "lon": 79.3978, "lat": 21.1797,
               "mw": 2320, "members": "NTPC Mauda (2,320 MW)", "fgd": "yes", "fgd_date": "2025-01",
               "fgd_note": f"Category C, exempt ({_N}), but NTPC built wet limestone FGD anyway (Mitsubishi Power "
-                          "contract, 2018); FGD and gypsum units shown in service in Oct 2026 (The Live Nagpur, "
-                          "23 Oct 2026). The satellite ratio falls from early 2025."},
+                          "contract, 2018). The satellite ratio falls from early 2025 (the check date used here).",
+              "official": "\"FGD system for Unit-3 & 4 is in service\" (Stage II, 2×660 MW of the 2,320 MW). The report "
+                          "also confirms Mauda is Category C.",
+              "official_source": "NTPC, Mauda STPP Stage-II half-yearly EC compliance report to MoEF&CC, status "
+                                 "31 Mar 2026"},
     "bhusawal": {"name": "Bhusawal (Deepnagar)", "kind": "Coal power", "district": "Jalgaon", "lon": 75.8425,
                  "lat": 21.0483, "mw": 1420, "members": "Mahagenco Bhusawal (1,420 MW in GPPD)", "fgd": None,
                  "fgd_note": "Mahagenco listed Bhusawal 500 MW units for FGD in Jan–Jul 2026 (annual report "
@@ -129,6 +140,10 @@ SOURCES = [
      "Mauda; Power Engineering on Dahanu seawater FGD; MPCB consent (2012) for Tata Power Trombay",
      "provider": "News and company sources", "source": "thelivenagpur.com; power.mhi.com; power-eng.com; mpcb.gov.in",
      "license": "Public", "used_for": "Reference plants with scrubbers (Mauda, Dahanu, Trombay)"},
+    {"key": "official", "dataset": "Official cross-checks: Mahagenco CSTPS and Koradi EC compliance reports; NTPC "
+     "Mauda Stage-II EC compliance report (to MoEF&CC)", "provider": "Mahagenco; NTPC", "source":
+     "mahagenco.in/EC-Compliance-report; ntpc.co.in/about-us/corporate-functions/environment/status-hyc-reports",
+     "license": "Public", "used_for": "Validation: plant's own stack SO₂ (Chandrapur), scrubber status (Koradi, Mauda)"},
     {"key": "cepi", "dataset": "CPCB Comprehensive Environmental Pollution Index action plans (2020)",
      "provider": "Central Pollution Control Board", "source": "cpcb.gov.in/industrial_pollution",
      "license": "Public", "used_for": "Critically polluted industrial clusters (Tarapur, Navi Mumbai, Chandrapur)"},
@@ -142,11 +157,18 @@ METHOD = {
                    f"{RING_KM[1]} km ring (regional background). TROPOMI offline L3, cloud fraction under "
                    f"{MAX_CLOUD}. Units: µmol/m².",
     "years": "Years are compared on January–May only: clear skies and no monsoon washout.",
-    "status": f"Check first: SO₂ above background of {SO2_HIGH:.0f}+ µmol/m² over the last 12 months, or rising "
-              f"{RISING:.0%}+ against 2021-2024 (January–May). Watch: {SO2_DETECTED:.0f}+ µmol/m². Low: below that, within the "
+    "status": f"Check first: SO₂ above background of {SO2_HIGH:.0f}+ µmol/m² over the chosen period (default: last 12 "
+              f"months), or the latest January–May in the period "
+              f"{RISING:.0%}+ above 2021-2024. Watch: {SO2_DETECTED:.0f}+ µmol/m². Low: below that, within the "
               "noise of a monthly mean.",
-    "scrubber": "SO₂ ÷ NO₂ above background, before vs after a date, minus the same change at exempt plants without "
-                "scrubbers. A scrubber cuts SO₂ but not NO₂.",
+    "scrubber": "SO₂ ÷ NO₂ above background, before vs after a date, minus the median change at plants without "
+                "scrubbers (exempt plants, and Chandrapur per its own stack readings). A scrubber cuts SO₂ but not NO₂.",
+    "validation": "Checked against official filings to MoEF&CC. Chandrapur's own stack readings show SO₂ about 6 times "
+                  "the limit every month of 2024-2026 (flagged 'check first' here) and no scrubber; its stack SO₂ ÷ NOx "
+                  "(2.8-3.2) matches the satellite level (2.2-2.9), but the satellite ratio drifts down ~10-15% over "
+                  "2023-2026 while the stack ratio stays flat, which is why the scrubber check subtracts plants without "
+                  "scrubbers. NTPC confirms Mauda's Stage-II scrubbers in service (Mar 2026); Mahagenco confirms Koradi "
+                  "has none yet (Dec 2025), matching the satellite.",
     "limits": "Columns, not stack concentrations: no verdict on the mg/Nm³ norm. One overpass a day (~13:30), so "
               "night releases are missed. Sites a few km apart are merged. Retrieval changes and coal sulphur "
               "content also move the numbers, so a change is a reason to inspect, not proof.",
@@ -230,38 +252,58 @@ def _ratio(so2, no2):
     return round(so2 / no2, 2) if so2 is not None and no2 is not None and no2 >= MIN_NO2_FOR_RATIO else None
 
 
-def summarise(sid: str, data: dict, months: list[tuple[int, int]]) -> dict:
-    """Monthly series, dry-season yearly values, last-12-month level, trend and status for one site."""
+def summarise(sid: str, data: dict, months: list[tuple[int, int]], period: tuple[str, str] | None = None) -> dict:
+    """Monthly series, dry-season yearly values, level over the period, trend and status for one site.
+
+    `period` is (first, last) as "YYYY-MM"; by default the last 12 months. The level is the mean over the period; the
+    trend compares the latest January-May inside the period with 2021-2024.
+    """
     keys = [f"{y}{m:02d}" for y, m in months]
     series = [{"month": f"{k[:4]}-{k[4:]}", "so2": data["so2"].get(k), "no2": data["no2"].get(k),
                "ratio": _ratio(data["so2"].get(k), data["no2"].get(k))} for k in keys]
-    years = sorted({y for y, _ in months})
+    if period is None:
+        period = (series[-min(12, len(series))]["month"], series[-1]["month"])
+    first, last = period[0].replace("-", ""), period[1].replace("-", "")
+    window = [k for k in keys if first <= k <= last]
     dry = []
-    for y in years:
+    for y in sorted({y for y, _ in months}):
         ks = [f"{y}{m:02d}" for m in DRY_MONTHS if f"{y}{m:02d}" in data["so2"]]
         if len(ks) < 3:
             continue
         so2, no2 = _avg(data["so2"][k] for k in ks), _avg(data["no2"][k] for k in ks)
-        dry.append({"year": y, "so2": so2, "no2": no2, "ratio": _ratio(so2, no2)})
-    last12 = keys[-12:]
-    so2_12, no2_12 = _avg(data["so2"].get(k) for k in last12), _avg(data["no2"].get(k) for k in last12)
+        dry.append({"year": y, "so2": so2, "no2": no2, "ratio": _ratio(so2, no2), "from": min(ks), "to": max(ks)})
+    so2_lvl, no2_lvl = _avg(data["so2"].get(k) for k in window), _avg(data["no2"].get(k) for k in window)
     base = [d["so2"] for d in dry if 2021 <= d["year"] <= 2024 and d["so2"] is not None]
-    latest_dry = dry[-1] if dry else None
+    in_period = [d for d in dry if first <= d["from"] and d["to"] <= last]
+    latest_dry = in_period[-1] if in_period else None
     change = (round((latest_dry["so2"] - mean(base)) / mean(base), 3)
               if latest_dry and base and latest_dry["so2"] is not None and mean(base) > SO2_DETECTED else None)
     reasons = []
-    if so2_12 is not None and so2_12 >= SO2_HIGH:
+    if so2_lvl is not None and so2_lvl >= SO2_HIGH:
         reasons.append("high SO₂")
     if change is not None and change >= RISING:
         reasons.append("SO₂ rising")
-    status = ("check first" if reasons else "watch" if (so2_12 or 0) >= SO2_DETECTED
-              else "low" if so2_12 is not None else "no data")
+    status = ("check first" if reasons else "watch" if (so2_lvl or 0) >= SO2_DETECTED
+              else "low" if so2_lvl is not None else "no data")
     s = SITES[sid]
     return {"id": sid, "name": s["name"], "kind": s["kind"], "district": s["district"], "mw": s["mw"],
             "members": s["members"], "fgd": s["fgd"], "fgd_date": s.get("fgd_date"), "fgd_note": s["fgd_note"],
-            "lat": s["lat"], "lon": s["lon"], "so2_12m": so2_12, "no2_12m": no2_12, "ratio_12m": _ratio(so2_12, no2_12),
-            "dry": dry, "dry_year": latest_dry["year"] if latest_dry else None,
+            "official": s.get("official"), "official_source": s.get("official_source"),
+            "lat": s["lat"], "lon": s["lon"], "period": {"start": period[0], "end": period[1], "months": len(window)},
+            "so2_mean": so2_lvl, "no2_mean": no2_lvl, "ratio_mean": _ratio(so2_lvl, no2_lvl),
+            "dry": [{k: v for k, v in d.items() if k not in ("from", "to")} for d in dry],
+            "dry_year": latest_dry["year"] if latest_dry else None,
             "so2_change": change, "series": series, "reasons": reasons, "status": status}
+
+
+def resummarise(results: dict[str, dict], start: str, end: str) -> dict[str, dict]:
+    """Recompute every site for a new period from the monthly series already stored with a check."""
+    out = {}
+    for sid, r in results.items():
+        months = [(int(p["month"][:4]), int(p["month"][5:])) for p in r["series"]]
+        data = {g: {p["month"].replace("-", ""): p[g] for p in r["series"]} for g in ("so2", "no2")}
+        out[sid] = summarise(sid, data, months, (start, end))
+    return out
 
 
 def scrubber_check(results: dict[str, dict], sid: str, on: str, before: int = 12, after: int | None = None) -> dict:

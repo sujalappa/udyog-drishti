@@ -16,13 +16,17 @@ def _flat(value):
     return "" if value is None else value
 
 
-def write_csv(path, rows: list[dict], columns: list[tuple[str, str]]) -> None:
+def csv_text(rows: list[dict], columns: list[tuple[str, str]]) -> str:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow([label for _, label in columns])
     for r in rows:
         w.writerow([_flat(r.get(k)) for k, _ in columns])
-    path.write_text(buf.getvalue(), encoding="utf-8-sig")
+    return buf.getvalue()
+
+
+def write_csv(path, rows: list[dict], columns: list[tuple[str, str]]) -> None:
+    path.write_text(csv_text(rows, columns), encoding="utf-8-sig")
 
 
 def write_geojson(path, units: dict, results: dict) -> None:
