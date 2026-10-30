@@ -21,6 +21,7 @@ CONFIG = {
     "line": "A monthly satellite check of SO₂ and NO₂ at Maharashtra's large coal power plants and industrial areas: "
             "where to inspect first, and whether a scrubber worked. Independent of the plants' own monitors.",
     "subtheme": "Sub-theme: Industrial decarbonisation, pollution control and wastewater reuse",
+    "team": 'Sujal Chondekar · Kshitij Mehrotra · Sandeep Mataghare · Sanchay Hira',
     "image": "img/app_state.png",
     "facts": ["17 plants and industrial areas, monthly since 2019, in ~1 min",
               "Sentinel-5P SO₂ and NO₂; agrees with plants' official filings"],
@@ -102,11 +103,12 @@ def main(cfg=CONFIG):
     set_text(sh["Text 2"], [(cfg["line"], False, None)], 13, SOFT, italic=False)
     sh["Text 2"].height = Inches(0.9)
     textbox(s, 0.5, 3.0, 5.4, 0.3, [[(cfg["subtheme"], True, ORANGE)]], 10.5, ORANGE)
-    textbox(s, 0.5, 4.05, 5.6, 0.75, [
-        [("Sujal Chondekar  ·  Kshitij Mehrotra", True, WHITE)],
-        [("Mentor: Dr. Swati Hira, Assistant Professor, CSE", False, SOFT)],
-        [("Indian Institute of Information Technology, Nagpur", False, SOFT)],
-    ], 10.5, WHITE)
+    if cfg.get("team"):
+        textbox(s, 0.5, 4.05, 5.6, 0.75, [
+            [(cfg["team"], True, WHITE)],
+            [("Mentor: Dr. Swati Hira, Assistant Professor, CSE", False, SOFT)],
+            [("Indian Institute of Information Technology, Nagpur", False, SOFT)],
+        ], 10.5, WHITE)
 
     # Right card: replace the "How to use this template" guidance with a prototype card.
     card = sh["Shape 15"]
