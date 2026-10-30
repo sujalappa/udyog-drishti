@@ -169,6 +169,8 @@ fill(sh["Text 25"], [
     [("6 months: ", True), ("every coal plant statewide; monthly report card", False)],
     [("12 months: ", True), ("cement, steel, refineries; effluent watch at MIDCs", False)],
 ], size=9, bullets=True)
+# not yet engaged: named as the bodies we will approach for the pilot
+fill(sh["Text 27"], [[("Partners to approach", True)]], color=NAVY, size=12)
 fill(sh["Text 28"], [
     "Maharashtra Pollution Control Board (MPCB)",
     "Mahagenco and NTPC environment teams",
